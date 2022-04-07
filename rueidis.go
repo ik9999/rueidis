@@ -43,6 +43,8 @@ type ClientOption struct {
 	Dialer    net.Dialer
 	TLSConfig *tls.Config
 
+	RedirectFn func(dst string) (string)
+
 	// Sentinel options, including MasterSet and Auth options
 	Sentinel SentinelOption
 
@@ -186,6 +188,9 @@ func dial(dst string, opt *ClientOption) (conn net.Conn, err error) {
 	}
 	if opt.Dialer.KeepAlive == 0 {
 		opt.Dialer.KeepAlive = DefaultTCPKeepAlive
+	}
+	if opt.RedirectFn != nil {
+		dst = opt.RedirectFn(dst)
 	}
 	if opt.TLSConfig != nil {
 		conn, err = tls.DialWithDialer(&opt.Dialer, "tcp", dst, opt.TLSConfig)
